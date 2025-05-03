@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motofrete Express</title>
+    
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- CSS Customizado -->
+    <style>
+        .contador-caracteres {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .contador-caracteres.alerta {
+            color: #dc3545;
+        }
+        :root {
+            --cor-primaria: #4361ee;
+            --cor-secundaria: #3f37c9;
+            --cor-sucesso: #4bb543;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: var(--cor-primaria);
+            color: white;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background-color: var(--cor-primaria);
+            border: none;
+            padding: 12px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--cor-secundaria);
+            transform: translateY(-2px);
+        }
+        
+        .form-control:focus {
+            border-color: var(--cor-primaria);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+        
+        .input-group-text {
+            background-color: #e9ecef;
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .card {
+                margin: 0 10px;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            
+            .form-section {
+                padding: 15px !important;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="card shadow-lg">
+            <div class="card-header text-center py-3">
+                <h1><i class="fas fa-motorcycle me-2"></i>Motofrete Express</h1>
+            </div>
+            
+    
+                    </div>
+                </div>
+            
+                <!-- Modal de Resultado -->
+                <div class="modal fade" id="modalResultado" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title"><i class="fas fa-check-circle me-2"></i> Cálculo Concluído</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center py-4">
+                                <h3 id="valorFreteModal">Frete: R$ 0,00</h3>
+                                <p class="text-muted mt-2">O valor foi salvo no sistema</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                <a href="/entregas?senha=123" class="btn btn-primary">
+                                    <i class="fas fa-history me-1"></i> Ver Histórico
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            
+                <!-- Scripts -->
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                <script>
+                    // Configurações iniciais (data, contador de caracteres)
+                    
+                    document.getElementById('formFrete').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const btn = e.target.querySelector('button[type="submit"]');
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> CALCULANDO...';
+                        btn.disabled = true;
+            
+                        try {
+                            const formData = new FormData(e.target);
+                            const response = await fetch('/calcular', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const data = await response.json();
+                            
+                            if (data.success) {
+                                document.getElementById('valorFreteModal').textContent = `Frete: ${data.frete}`;
+                                new bootstrap.Modal(document.getElementById('modalResultado')).show();
+                                e.target.reset();
+                            } else {
+                                alert(`Erro: ${data.message}`);
+                            }
+                        } catch (error) {
+                            alert('Erro na conexão com o servidor');
+                        } finally {
+                            btn.innerHTML = '<i class="fas fa-calculator me-2"></i> CALCULAR FRETE';
+                            btn.disabled = false;
+                        }
+                    });
+                </script>
+            </body>
+            </html> 
+                <!-- Feedback Dinâmico -->
+                <div id="feedback" class="alert alert-dismissible fade show" style="display: none;">
+                    <span id="feedback-message"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <form id="formFrete">
+                    <!-- Seção: Dados do Cliente -->
+                    <div class="form-section mb-4 p-3 bg-light rounded">
+                        <h4 class="mb-3 text-primary"><i class="fas fa-user me-2"></i> Dados do Cliente</h4>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nome Completo*</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" name="cliente" class="form-control" placeholder="Ex: João Silva" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Telefone*</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                    <input type="tel" name="telefone" class="form-control" placeholder="Ex: (11) 98765-4321" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label">Endereço Completo*</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                    <input type="text" name="endereco" class="form-control" placeholder="Ex: Rua Exemplo, 123 - Centro" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção: Dimensões -->
+                    <div class="form-section mb-4 p-3 bg-light rounded">
+                        <h4 class="mb-3 text-primary"><i class="fas fa-box-open me-2"></i> Dimensões da Encomenda</h4>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Peso (kg)*</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-weight-hanging"></i></span>
+                                    <input type="number" name="peso" class="form-control" step="0.1" min="0" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label">Altura (cm)*</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-arrows-alt-v"></i></span>
+                                    <input type="number" name="altura" class="form-control" step="0.1" min="0" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label">Largura (cm)*</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-arrows-alt-h"></i></span>
+                                    <input type="number" name="largura" class="form-control" step="0.1" min="0" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label">Profundidade (cm)*</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-cube"></i></span>
+                                    <input type="number" name="profundidade" class="form-control" step="0.1" min="0" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Seção: Distância -->
+                    <div class="form-section mb-4 p-3 bg-light rounded">
+                        <h4 class="mb-3 text-primary"><i class="fas fa-route me-2"></i> Distância da Entrega</h4>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Distância (km)*</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-tachometer-alt"></i></span>
+                                <input type="number" name="distancia" class="form-control" step="0.1" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Seção: Detalhes da Entrega -->
+<div class="form-section mb-4 p-3 bg-light rounded">
+    <h4 class="mb-3 text-primary"><i class="fas fa-truck me-2"></i> Detalhes da Entrega</h4>
+    
+    <!-- Tipo de Encomenda -->
+    <div class="mb-3">
+        <label class="form-label">Tipo de Encomenda*</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-box"></i></span>
+            <select name="tipo_encomenda" class="form-select" required>
+                <option value="" disabled selected>Selecione...</option>
+                <option value="Documento">Documento</option>
+                <option value="Pacote Pequeno">Pacote Pequeno (até 1kg)</option>
+                <option value="Pacote Médio">Pacote Médio (1-5kg)</option>
+                <option value="Pacote Grande">Pacote Grande (+5kg)</option>
+                <option value="Alimento">Alimento</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Data/Horário -->
+    <div class="mb-3">
+        <label class="form-label">Data/Horário da Entrega*</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+            <input type="datetime-local" name="data_entrega" class="form-control" required>
+        </div>
+    </div>
+    
+    <!-- Forma de Pagamento -->
+    <div class="mb-3">
+        <label class="form-label">Forma de Pagamento*</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-wallet"></i></span>
+            <div class="form-control border-0 bg-transparent">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="forma_pagamento" id="pix" value="Pix" required>
+                    <label class="form-check-label" for="pix">Pix</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="forma_pagamento" id="cartao" value="Cartão">
+                    <label class="form-check-label" for="cartao">Cartão</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="forma_pagamento" id="dinheiro" value="Dinheiro">
+                    <label class="form-check-label" for="dinheiro">Dinheiro</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Observações -->
+    <div class="mb-0">
+        <label class="form-label">Observações</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-edit"></i></span>
+            <textarea name="observacoes" class="form-control" rows="2" maxlength="200" 
+                     placeholder="Ex: Entregar na portaria"></textarea>
+        </div>
+        <small class="text-muted">Máx. 200 caracteres</small>
+    </div>
+</div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 py-3">
+                        <i class="fas fa-calculator me-2"></i> CALCULAR FRETE
+                    </button>
+                </form>
+                
+                <!-- Resultado do Cálculo -->
+                <div id="resultado" class="mt-4 p-3 text-center" style="display: none;">
+                    <h3 class="text-success"><i class="fas fa-check-circle me-2"></i> <span id="valor-frete"></span></h3>
+                    <div class="d-flex justify-content-center gap-3 mt-3">
+                        <a href="/" class="btn btn-outline-primary">
+                            <i class="fas fa-redo me-2"></i> Novo Cálculo
+                        </a>
+                        <a href="/entregas?senha=123" class="btn btn-outline-secondary">
+                            <i class="fas fa-history me-2"></i> Ver Histórico
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS + Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- JavaScript Customizado -->
+        <!-- JavaScript Customizado -->
+        <script>
+            // Validação em Tempo Real
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.value < 0) this.value = 0;
+                });
+            });
+    
+            // Configuração inicial do campo de data
+            document.addEventListener('DOMContentLoaded', function() {
+                // Define a data mínima como agora
+                const campoData = document.querySelector('input[type="datetime-local"]');
+                const agora = new Date();
+                agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+                campoData.min = agora.toISOString().slice(0, 16);
+                
+                // Contador de caracteres para observações
+                const textareaObs = document.querySelector('textarea[name="observacoes"]');
+                const contador = document.createElement('small');
+                contador.className = 'contador-caracteres';
+                contador.textContent = '200 caracteres restantes';
+                textareaObs.parentNode.appendChild(contador);
+                
+                textareaObs.addEventListener('input', function() {
+                    const restantes = 200 - this.value.length;
+                    contador.textContent = `${restantes} caracteres restantes`;
+                    contador.classList.toggle('alerta', restantes < 30);
+                });
+            });
+    
+            // Form Submission com AJAX
+            document.getElementById('formFrete').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const btn = form.querySelector('button[type="submit"]');
+                
+                // Mostrar loading
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> CALCULANDO...';
+                btn.disabled = true;
+                
+                try {
+                    const response = await fetch('/calcular', {
+                        method: 'POST',
+                        body: new FormData(form)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Mostrar resultado
+                        document.getElementById('valor-frete').textContent = `Frete: ${data.frete}`;
+                        document.getElementById('resultado').style.display = 'block';
+                        form.style.display = 'none';
+                        
+                        // Feedback
+                        showFeedback(data.message, 'success');
+                    } else {
+                        showFeedback(data.message, 'danger');
+                    }
+                } catch (error) {
+                    showFeedback("Erro na comunicação com o servidor", 'danger');
+                } finally {
+                    btn.innerHTML = '<i class="fas fa-calculator me-2"></i> CALCULAR FRETE';
+                    btn.disabled = false;
+                }
+            });
+            
+            // Função de Feedback
+            function showFeedback(message, type = 'success') {
+                const feedback = document.getElementById('feedback');
+                feedback.style.display = 'block';
+                feedback.className = `alert alert-${type} alert-dismissible fade show`;
+                
+                // Ícone dinâmico
+                const icon = type === 'success' 
+                    ? '<i class="fas fa-check-circle me-2"></i>' 
+                    : '<i class="fas fa-exclamation-circle me-2"></i>';
+                
+                document.getElementById('feedback-message').innerHTML = icon + message;
+                
+                // Auto-fechar após 5 segundos
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(feedback);
+                    bsAlert.close();
+                }, 5000);
+            }
+        </script>
+    </body>
+    </html>
